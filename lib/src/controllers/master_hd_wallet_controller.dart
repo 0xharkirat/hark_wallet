@@ -1,7 +1,21 @@
+import 'dart:developer' as dev;
+import 'package:flutter/foundation.dart'; // Import for compute
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hark_wallet/src/models/master_hd_wallet.dart';
-import 'dart:developer' as dev;
 import 'package:bip39/bip39.dart' as bip39;
+
+// Top-level function for `compute`
+Future<Seed?> _computeGenerateSeed(Mnemonic mnemonic) async {
+  return compute(_generateSeed, mnemonic);
+}
+
+// Function to actually generate the seed
+Seed? _generateSeed(Mnemonic mnemonic) {
+  if (!bip39.validateMnemonic(mnemonic)) {
+    return null;
+  }
+  return bip39.mnemonicToSeed(mnemonic);
+}
 
 class MasterHDWalletController extends Notifier<MasterHDWallet?> {
   @override
@@ -10,19 +24,24 @@ class MasterHDWalletController extends Notifier<MasterHDWallet?> {
   }
 
   /// public functions
-   Future<void> createNewMasterWallet() async {
+  Future<void> createNewMasterWallet() async {
     dev.log("creating new master wallet...");
-    /// Step 1: Generate a new mnemonic
-    final mnemonic = _generateNewMnemonic();
+    try {
+      // Step 1: Generate a new mnemonic
+      final mnemonic = _generateNewMnemonic();
 
-    /// Step 2: Generate a seed from the mnemonic
-    final seed = generateSeed(mnemonic);
-    if (seed == null) {
-      return;
+      // Step 2: Generate a seed from the mnemonic
+      final seed = await _computeGenerateSeed(mnemonic);
+      if (seed == null) {
+        dev.log("Failed to generate seed");
+        return;
+      }
+
+      // Step 3: Generate a master HD wallet from the seed & set the state
+      _generateMasterHDWallet(mnemonic, seed);
+    } catch (e) {
+      dev.log("Error creating master wallet: $e");
     }
-
-    /// Step 3: Generate a master HD wallet from the seed & set the state
-    _generateMasterHDWallet(mnemonic, seed);
   }
 
   void increment() {
@@ -37,28 +56,11 @@ class MasterHDWalletController extends Notifier<MasterHDWallet?> {
     state = null;
   }
 
-  Seed? generateSeed(Mnemonic mnemonic) {
-    dev.log("generating seed from mnemonic...");
-    dev.log("checking validity of mnemonic...");
-    if (!bip39.validateMnemonic(mnemonic)) {
-      dev.log("Invalid mnemonic");
-      return null;
-    }
-
-    final seedBytes = bip39.mnemonicToSeed(mnemonic);
-    dev.log("seed generation successful");
-   
-    return seedBytes;
-  }
-
-
   /// private functions
-  /// _ underscore represents the private function to this file only.
   Mnemonic _generateNewMnemonic() {
     dev.log("generating new mnemonic...");
     final mnemonic = bip39.generateMnemonic();
     dev.log("mnemonic generation successful: $mnemonic");
-  
     return mnemonic;
   }
 
@@ -73,7 +75,6 @@ class MasterHDWalletController extends Notifier<MasterHDWallet?> {
     state = masterHDWallet;
   }
 }
-
 
 /// Provider for the [MasterHDWalletController]
 final masterHDWalletProvider =

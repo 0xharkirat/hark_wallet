@@ -1,4 +1,5 @@
 import 'dart:developer' as dev;
+import 'dart:isolate';
 
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,45 +17,53 @@ class EtherWalletController extends Notifier<List<EtherWallet>> {
   }
 
   Future<void> generateWalletFromSeed() async {
-  MasterHDWallet? masterHDWallet = ref.read(masterHDWalletProvider);
-  
-  if (masterHDWallet == null) {
-    dev.log("Master HD Wallet is null, creating a new one...");
-    await ref.read(masterHDWalletProvider.notifier).createNewMasterWallet();
-    
-    // Fetch the updated masterHDWallet after creation
-    masterHDWallet = ref.read(masterHDWalletProvider);
+    MasterHDWallet? masterHDWallet = ref.read(masterHDWalletProvider);
+
     if (masterHDWallet == null) {
-      dev.log("Failed to create Master HD Wallet");
-      return;
+      dev.log("Master HD Wallet is null, creating a new one...");
+      ref.read(masterHDWalletProvider.notifier).createNewMasterWallet();
+
+      // Fetch the updated masterHDWallet after creation
+      masterHDWallet = ref.read(masterHDWalletProvider);
+      if (masterHDWallet == null) {
+        dev.log("Failed to create Master HD Wallet");
+        return;
+      }
     }
+
+    final wallets = await Isolate.run(() async {
+      return await _generateWalletFromSeed(masterHDWallet!);
+    });
+
+
+    
+    state = [...state, ...wallets];
+    ref.read(masterHDWalletProvider.notifier).increment();
   }
 
-  final accountIndex = masterHDWallet.accountIndex;
-  final mnemonic = masterHDWallet.mnemonic;
-  final seed = masterHDWallet.seed;
+  Future<List<EtherWallet>> _generateWalletFromSeed(
+      MasterHDWallet masterHDWallet) async {
+    final accountIndex = masterHDWallet.accountIndex;
+    final mnemonic = masterHDWallet.mnemonic;
+    final seed = masterHDWallet.seed;
 
-  dev.log("Generating wallet no. $accountIndex from seed...");
+    final path = "m/44'/60'/0'/$accountIndex'";
+    final hdKey = await ED25519_HD_KEY.derivePath(path, seed);
 
-  final path = "m/44'/60'/0'/$accountIndex'";
-  final hdKey = await ED25519_HD_KEY.derivePath(path, seed);
+    final privateKey = bytesToHex(hdKey.key);
+    final publicKey = _getPublicKey(privateKey);
 
-  final privateKey = bytesToHex(hdKey.key);
-  final publicKey = _getPublicKey(privateKey);
+    final wallet = EtherWallet(
+      id: accountIndex,
+      privateKey: privateKey,
+      publicKey: publicKey,
+      path: path,
+      mnemonic: mnemonic,
+    );
+    dev.log("Wallet no. $accountIndex generated: $wallet");
 
-  final wallet = EtherWallet(
-    id: accountIndex,
-    privateKey: privateKey,
-    publicKey: publicKey,
-    path: path,
-    mnemonic: mnemonic,
-  );
-
-  dev.log("Wallet no. $accountIndex generated: $wallet");
-  state = [...state, wallet];
-  ref.read(masterHDWalletProvider.notifier).increment();
-}
-
+    return [wallet];
+  }
 
   /// _ underscore represents the private function to this file only.
   String _getPublicKey(String privateKey) {
