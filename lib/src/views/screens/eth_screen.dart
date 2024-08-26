@@ -1,11 +1,9 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hark_wallet/src/controllers/master_hd_wallet_controller.dart';
 import 'package:hark_wallet/src/controllers/theme_controller.dart';
 import 'package:hark_wallet/src/views/widgets/eth_text_field_widget.dart';
-import 'package:hark_wallet/src/views/widgets/wallet_list_widget.dart';
+import 'package:hark_wallet/src/views/widgets/wallet_list.dart';
 import 'package:pixelarticons/pixel.dart';
 
 class EthScreen extends ConsumerWidget {
@@ -22,7 +20,9 @@ class EthScreen extends ConsumerWidget {
 
     // log("etherWalletList: $etherWalletList");
     return Scaffold(
+      
       appBar: AppBar(
+        surfaceTintColor: Colors.transparent,
         toolbarHeight: 76,
         titleSpacing: 0,
         title: Padding(
@@ -55,7 +55,10 @@ class EthScreen extends ConsumerWidget {
         centerTitle: false,
         actions: [
           Padding(
-            padding: EdgeInsets.only(right: size.width * 0.1, top: 40,),
+            padding: EdgeInsets.only(
+              right: size.width * 0.1,
+              top: 40,
+            ),
             child: Row(
               children: [
                 Icon(
@@ -90,7 +93,7 @@ class EthScreen extends ConsumerWidget {
           final masterHdWallet = ref.watch(masterHDWalletProvider);
           return masterHdWallet == null
               ? const EthTextFieldWidget()
-              : const WalletListWidget();
+              : const WalletList();
         },
       ),
     );

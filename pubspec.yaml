@@ -44,6 +44,7 @@ dependencies:
   # google_fonts: ^6.2.1
   pixelarticons: ^0.4.0
   isolate_manager: ^5.2.1
+  url_launcher: ^6.3.0
 
 dev_dependencies:
   flutter_test:

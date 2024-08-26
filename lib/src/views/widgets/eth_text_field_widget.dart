@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hark_wallet/src/controllers/ether_wallet_controller.dart';
 import 'package:hark_wallet/src/controllers/master_hd_wallet_controller.dart';
 
 class EthTextFieldWidget extends ConsumerStatefulWidget {
@@ -99,8 +100,8 @@ class _EthTextFieldWidgetState extends ConsumerState<EthTextFieldWidget> {
                             });
 
                             await ref
-                                .read(masterHDWalletProvider.notifier)
-                                .createNewMasterWallet();
+                                .read(etherWalletController.notifier)
+                                .generateWalletFromSeed();
 
                             setState(() {
                               _isCreatingWallet = false;

@@ -21,7 +21,7 @@ class EtherWalletController extends Notifier<List<EtherWallet>> {
 
     if (masterHDWallet == null) {
       dev.log("Master HD Wallet is null, creating a new one...");
-      ref.read(masterHDWalletProvider.notifier).createNewMasterWallet();
+      await ref.read(masterHDWalletProvider.notifier).createNewMasterWallet();
 
       // Fetch the updated masterHDWallet after creation
       masterHDWallet = ref.read(masterHDWalletProvider);
@@ -31,9 +31,7 @@ class EtherWalletController extends Notifier<List<EtherWallet>> {
       }
     }
 
-    final wallets = await Isolate.run(() async {
-      return await _generateWalletFromSeed(masterHDWallet!);
-    });
+    final wallets = await _generateWalletFromSeed(masterHDWallet);
 
 
     
