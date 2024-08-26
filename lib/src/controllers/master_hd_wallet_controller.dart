@@ -1,21 +1,19 @@
 import 'dart:developer' as dev;
-import 'package:flutter/foundation.dart'; // Import for compute
+ // Import for compute
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+
 import 'package:hark_wallet/src/models/master_hd_wallet.dart';
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:hark_wallet/src/workers/seed_isolate.dart';
 
-// Top-level function for `compute`
-Future<Seed?> _computeGenerateSeed(Mnemonic mnemonic) async {
-  return compute(_generateSeed, mnemonic);
-}
 
-// Function to actually generate the seed
-Seed? _generateSeed(Mnemonic mnemonic) {
-  if (!bip39.validateMnemonic(mnemonic)) {
-    return null;
-  }
-  return bip39.mnemonicToSeed(mnemonic);
-}
+
+
+
+
+
+
 
 class MasterHDWalletController extends Notifier<MasterHDWallet?> {
   @override
@@ -31,7 +29,7 @@ class MasterHDWalletController extends Notifier<MasterHDWallet?> {
       final mnemonic = _generateNewMnemonic();
 
       // Step 2: Generate a seed from the mnemonic
-      final seed = await _computeGenerateSeed(mnemonic);
+      final seed = await isolateGenerateSeed(mnemonic);
       if (seed == null) {
         dev.log("Failed to generate seed");
         return;

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hark_wallet/src/core/routing/app_router.dart';
 
 
+
 // ignore: depend_on_referenced_packages
 import 'package:flutter_web_plugins/url_strategy.dart';
+
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -120,3 +122,4 @@ class MyApp extends ConsumerWidget {
     );
   }
 }
+
