@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hark_wallet/src/controllers/ether_wallet_controller.dart';
-import 'package:hark_wallet/src/core/constants/colors.dart';
 
 import 'package:hark_wallet/src/views/widgets/seed_phrase_grid.dart';
 import 'package:pixelarticons/pixel.dart';

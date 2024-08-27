@@ -19,6 +19,22 @@ class MasterHDWallet {
     accountIndex--;
   }
 
+  factory MasterHDWallet.fromJson(Map<String, dynamic> json) {
+    return MasterHDWallet(
+      mnemonic: json['mnemonic'],
+      seed: json['seed'],
+      accountIndex: json['accountIndex'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'mnemonic': mnemonic,
+      'seed': seed,
+      'accountIndex': accountIndex,
+    };
+  }
+
  
 
   @override

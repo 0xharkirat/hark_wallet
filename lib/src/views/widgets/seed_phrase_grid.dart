@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hark_wallet/src/controllers/master_hd_wallet_controller.dart';
 import 'package:hark_wallet/src/core/helpers/create_snack_bar.dart';
+import 'package:pixelarticons/pixel.dart';
 
 class SeedPhraseGrid extends ConsumerWidget {
   const SeedPhraseGrid({super.key});
@@ -74,7 +75,7 @@ class SeedPhraseGrid extends ConsumerWidget {
       ScaffoldMessenger.of(context).removeCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         createSnackBar(
-          "Recovery Phrase copied to clipboard",
+          "Recovery Phrase copied to clipboard", Pixel.check, false
         ),
       );
     }

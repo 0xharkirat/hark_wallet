@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hark_wallet/src/controllers/ether_wallet_controller.dart';
-import 'package:hark_wallet/src/controllers/master_hd_wallet_controller.dart';
+import 'package:hark_wallet/src/core/helpers/create_snack_bar.dart';
+import 'package:pixelarticons/pixel.dart';
 
 class EthTextFieldWidget extends ConsumerStatefulWidget {
   const EthTextFieldWidget({super.key});
@@ -12,6 +13,14 @@ class EthTextFieldWidget extends ConsumerStatefulWidget {
 
 class _EthTextFieldWidgetState extends ConsumerState<EthTextFieldWidget> {
   bool _isCreatingWallet = false;
+  bool _isObscure = true;
+  final TextEditingController _textController = TextEditingController();
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,21 +57,34 @@ class _EthTextFieldWidgetState extends ConsumerState<EthTextFieldWidget> {
               Expanded(
                 flex: 5,
                 child: TextField(
+                  controller: _textController,
                   cursorColor: Colors.white,
-                  obscureText: true,
+                  obscureText: _isObscure,
                   autocorrect: false,
                   autofillHints: null,
                   enableSuggestions: false,
                   style: Theme.of(context)
                       .textTheme
-                      .bodySmall!
+                      .bodyLarge!
                       .copyWith(color: Colors.white),
                   decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                    suffix: IconButton(
+                        icon: Icon(
+                          _isObscure ? Pixel.eye : Pixel.eyeclosed,
+                          color: Colors.white,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _isObscure = !_isObscure;
+                          });
+                        }),
                     hintText:
                         'Enter your seed phrase (or leave blank to generate)',
                     hintStyle: Theme.of(context)
                         .textTheme
-                        .bodyMedium!
+                        .bodyLarge!
                         .copyWith(color: Colors.white54),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -99,9 +121,24 @@ class _EthTextFieldWidgetState extends ConsumerState<EthTextFieldWidget> {
                               _isCreatingWallet = true;
                             });
 
-                            await ref
-                                .read(etherWalletController.notifier)
-                                .generateWalletFromSeed();
+                            if (_textController.text.isEmpty) {
+                              await ref
+                                  .read(etherWalletController.notifier)
+                                  .generateWallet();
+                            } else {
+                              final walletFound = await ref
+                                  .read(etherWalletController.notifier)
+                                  .generateWalletFromUserMnemonic(
+                                      _textController.text);
+
+                              if (!walletFound) {
+                                ScaffoldMessenger.of(context).clearSnackBars();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  createSnackBar("Invalied Recovery Phrase",
+                                      Pixel.alert, true),
+                                );
+                              }
+                            }
 
                             setState(() {
                               _isCreatingWallet = false;

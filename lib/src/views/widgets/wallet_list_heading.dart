@@ -22,7 +22,7 @@ class WalletListHeading extends ConsumerWidget {
             ),
           ),
           onPressed: () {
-            ref.read(etherWalletController.notifier).generateWalletFromSeed();
+            ref.read(etherWalletController.notifier).generateWallet();
           },
           child: Text(
             "Add Wallet",
@@ -40,7 +40,9 @@ class WalletListHeading extends ConsumerWidget {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          onPressed: () {},
+          onPressed: () {
+            ref.read(etherWalletController.notifier).reset();
+          },
           child: Text("Clear Wallets",
               style: Theme.of(context).textTheme.titleLarge),
         ),
